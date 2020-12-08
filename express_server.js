@@ -7,6 +7,7 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 }
 
+app.get('/urls.json', (req, res) => res.send(urlDatabase));
 app.get('/', (req, res) => res.send('Hello!'));
 
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
