@@ -13,7 +13,12 @@ const urlDatabase = {
 }
 
 const generateRandomString = () => {
-  return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+  returnStr = ''
+  let chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+  for (let i = 0; i < 6; i++) {
+    returnStr += chars[Math.floor(Math.random() * chars.length) + 1]
+  };
+  return returnStr;
 }
 
 // post logic for when a form is submitted
