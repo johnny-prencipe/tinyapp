@@ -22,17 +22,13 @@ const generateRandomString = () => {
 }
 
 // post logic for when a form is submitted
-app.post('/urls/', (req, res) => {
-  const shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body['longURL'];
-  console.log(`new short URL: ${shortURL} for: ${urlDatabase[shortURL]}`);
-  res.send(`/urls/${shortURL}`);  // show user their new URL
-});
+// deleting a URL
 app.post('/urls/:url/delete', (req, res) => {
   delete urlDatabase[req.params.url];
   console.log(req.params, 'deleted');
   res.redirect('/urls');
 })
+// updating a URL, after checking to see if it exists
 app.post('/urls/:url/update', (req, res) => {
   if (!urlDatabase[req.params.url]) {
     res.redirect('/urls')
@@ -40,11 +36,12 @@ app.post('/urls/:url/update', (req, res) => {
     return;
   }
   urlDatabase[req.params.url] = req.body.longURL;
-  // console.log(req.params);
 });
+// making edit buttons to redirect to the edit page
 app.post('/urls/:url', (req, res) => {
   res.redirect(`/urls/${req.params.url}`);
 });
+// making a new shortURL
 app.post('/urls/', (req, res) => {
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body['longURL'];
