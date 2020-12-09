@@ -22,9 +22,12 @@ const generateRandomString = () => {
 }
 
 // post logic for when a form is submitted
-app.post('/urls', (req, res) => {
-  console.log(req.body); //log the POST request to the console
-  res.send('ok'); //respond with 'ok'
+app.post('/urls/', (req, res) => {
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = req.body['longURL'];
+
+  res.send(`/urls/${shortURL}`);  // show user their new URL
+  console.log(urlDatabase[shortURL]);
 });
 
 // URL tree
@@ -42,6 +45,11 @@ app.get('/hello', (req, res) => res.send('<html><body>Hello <b>World</b></body><
 app.get('/urls', (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render('urls_index', templateVars);
+});
+app.get('/u/:shortURL', (req, res) => { //ASK ABOUT THIS
+  const longURL = urlDatabase[req.params['shortURL']]; //ASK ABOUT THIS
+  console.log(longURL); //ASK ABOUT THIS
+  res.redirect(longURL); //ASK ABOUT THIS
 });
 
 // message on app bootup
