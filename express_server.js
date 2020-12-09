@@ -25,10 +25,14 @@ const generateRandomString = () => {
 app.post('/urls/', (req, res) => {
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body['longURL'];
-
+  console.log(`new short URL: ${shortURL} for: ${urlDatabase[shortURL]}`);
   res.send(`/urls/${shortURL}`);  // show user their new URL
-  console.log(urlDatabase[shortURL]);
 });
+app.post('/urls/:url/delete', (req, res) => {
+  delete urlDatabase[req.params.url];
+  console.log(req.params, 'deleted');
+  res.redirect('/urls');
+})
 
 // URL tree
 app.get('/urls/new', (req, res) => res.render('urls_new'));
@@ -46,10 +50,10 @@ app.get('/urls', (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render('urls_index', templateVars);
 });
-app.get('/u/:shortURL', (req, res) => { //ASK ABOUT THIS
-  const longURL = urlDatabase[req.params['shortURL']]; //ASK ABOUT THIS
-  console.log(longURL); //ASK ABOUT THIS
-  res.redirect(longURL); //ASK ABOUT THIS
+app.get('/u/:shortURL', (req, res) => { 
+  const longURL = urlDatabase[req.params['shortURL']]; 
+  console.log(longURL); 
+  res.redirect(longURL); 
 });
 
 // message on app bootup
