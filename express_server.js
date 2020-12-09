@@ -33,6 +33,24 @@ app.post('/urls/:url/delete', (req, res) => {
   console.log(req.params, 'deleted');
   res.redirect('/urls');
 })
+app.post('/urls/:url/update', (req, res) => {
+  if (!urlDatabase[req.params.url]) {
+    res.redirect('/urls')
+    console.log('Error: no such URL:', req.params.url);
+    return;
+  }
+  urlDatabase[req.params.url] = req.body.longURL;
+  // console.log(req.params);
+});
+app.post('/urls/:url', (req, res) => {
+  res.redirect(`/urls/${req.params.url}`);
+});
+app.post('/urls/', (req, res) => {
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = req.body['longURL'];
+  console.log(`new short URL: ${shortURL} for: ${urlDatabase[shortURL]}`);
+  res.send(`/urls/${shortURL}`);  // show user their new URL
+});
 
 // URL tree
 app.get('/urls/new', (req, res) => res.render('urls_new'));
