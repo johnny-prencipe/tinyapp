@@ -5,17 +5,24 @@ const PORT = 8080;
 app.set("view engine", "ejs")
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  'b2xVn2': 'http://www.lighthouselabs.ca',
+  '9sm5xK': 'http://www.google.com'
 }
 
 // URL tree
+app.get('/urls/:shortURL', (req, res) => {
+  const templateVars = {
+    shortURL: req.params.shortURL,
+    longURL: urlDatabase[req.params.shortURL]
+  };
+  res.render('urls_show', templateVars);
+});
 app.get('/', (req, res) => res.send('Hello!'));
 app.get('/urls.json', (req, res) => res.send(urlDatabase));
-app.get('/hello', (req, res) => res.send("<html><body>Hello <b>World</b></body></html>\n"));
-app.get("/urls", (req, res) => {
+app.get('/hello', (req, res) => res.send('<html><body>Hello <b>World</b></body></html>\n'));
+app.get('/urls', (req, res) => {
   const templateVars = { urls: urlDatabase };
-  res.render("urls_index", templateVars);
+  res.render('urls_index', templateVars);
 });
 
 // message on app bootup
