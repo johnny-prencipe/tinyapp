@@ -13,6 +13,10 @@ const urlDatabase = {
 app.get('/', (req, res) => res.send('Hello!'));
 app.get('/urls.json', (req, res) => res.send(urlDatabase));
 app.get('/hello', (req, res) => res.send("<html><body>Hello <b>World</b></body></html>\n"));
+app.get("/urls", (req, res) => {
+  const templateVars = { urls: urlDatabase };
+  res.render("urls_index", templateVars);
+});
 
 // message on app bootup
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
