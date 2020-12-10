@@ -30,6 +30,7 @@ app.post('/urls/:url/delete', (req, res) => {
   console.log(req.params, 'deleted');
   res.redirect('/urls');
 })
+
 // updating a URL, after checking to see if it exists
 app.post('/urls/:url/update', (req, res) => {
   if (!urlDatabase[req.params.url]) {
@@ -39,10 +40,12 @@ app.post('/urls/:url/update', (req, res) => {
   }
   urlDatabase[req.params.url] = req.body.longURL;
 });
+
 // making edit buttons to redirect to the edit page
 app.post('/urls/:url', (req, res) => {
   res.redirect(`/urls/${req.params.url}`);
 });
+
 // making a new shortURL
 app.post('/urls/', (req, res) => {
   const shortURL = generateRandomString();
@@ -50,17 +53,20 @@ app.post('/urls/', (req, res) => {
   console.log(`new short URL: ${shortURL} for: ${urlDatabase[shortURL]}`);
   res.send(`/urls/${shortURL}`);  // show user their new URL
 });
+
 //adding a cookie on login
 app.post('/login', (req, res) => {
   console.log('new user cookie:', req.body);
   res.cookie('username', req.body.username);
   res.redirect('/urls');
 });
+
 // adding logout functionality 
 app.post('/logout', (req, res) => {
   res.clearCookie('username');
   res.redirect('/urls');
 });
+
 
 // URL tree
 app.get('/urls/new', (req, res) => res.render('urls_new'));
