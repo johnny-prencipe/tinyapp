@@ -11,20 +11,20 @@ app.set('view engine', 'ejs')
 
 
 const urlDatabase = {
-  'b2xVn2': 'http://www.lighthouselabs.ca',
-  '9sm5xK': 'http://www.google.com'
+  'b2xVn2': { longURL: 'http://www.lighthouselabs.ca', username: 'userRandomID'},
+  '9sm5xK': { longURL: 'http://www.google.com', username: 'user2RandomID' }
 }
 
 const users = { 
-  "userRandomID": {
-    id: "userRandomID", 
-    email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+  'userRandomID': {
+    id: 'userRandomID', 
+    email: 'user@example.com', 
+    password: 'purple-monkey-dinosaur'
   },
- "user2RandomID": {
-    id: "user2RandomID", 
-    email: "user2@example.com", 
-    password: "dishwasher-funk"
+ 'user2RandomID': {
+    id: 'user2RandomID', 
+    email: 'user2@example.com', 
+    password: 'dishwasher-funk'
   }
 }
 
@@ -59,7 +59,8 @@ const generateRandomString = () => {
 // post logic for when a form is submitted
 // deleting a URL
 app.post('/urls/:url/delete', (req, res) => {
-  if (!urlsForUser(username)[req.params.shortURL]) {
+  const username = req.cookies['username'];
+  if (!urlsForUser(username)[req.params.url]) {
     res.redirect('/');
     return false;
   }
@@ -70,21 +71,25 @@ app.post('/urls/:url/delete', (req, res) => {
 
 // updating a URL, after checking to see if it exists
 app.post('/urls/:url/update', (req, res) => {
-  if (!urlsForUser(username)[req.params.shortURL]) {
+  const username = req.cookies['username'];
+  if (!urlsForUser(username)[req.params.url]) {
     res.redirect('/');
     return false;
   }
   if (!urlDatabase[req.params.url]) {
     res.redirect('/urls')
     console.log('Error: no such URL:', req.params.url);
-    return;
+    return false;
   }
-  urlDatabase[req.params.url] = req.body.longURL;
+  console.log(`Updating ${req.params.url} from ${urlDatabase[req.params.url].longURL} to ${req.body.longURL}`)
+  urlDatabase[req.params.url].longURL = req.body.longURL;
+  console.log('Successfully updated.')
+  res.redirect('/');
 });
 
 // making edit buttons to redirect to the edit page
 app.post('/urls/:url', (req, res) => {
-  if (!urlsForUser(username)[req.params.shortURL]) {
+  if (!urlsForUser(req.cookies['username'])[req.params.shortURL]) {
     res.redirect('/');
     return false;
   }
@@ -93,6 +98,10 @@ app.post('/urls/:url', (req, res) => {
 
 // making a new shortURL
 app.post('/urls/', (req, res) => {
+  if (!req.cookies['username']) {
+    res.redirect('/');
+    return;
+  }
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = {}
   urlDatabase[shortURL].longURL = req.body['longURL']
@@ -181,6 +190,7 @@ app.get('/hello', (req, res) => res.send('<html><body>Hello <b>World</b></body><
 app.get('/urls', (req, res) => {
   if (!req.cookies['username']) {
     res.redirect('/login');
+    return;
   }
   const templateVars = {
     username: req.cookies['username'],
