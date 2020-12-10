@@ -100,14 +100,14 @@ app.post('/urls/:url', (req, res) => {
 app.post('/urls/', (req, res) => {
   if (!req.cookies['username']) {
     res.redirect('/');
-    return;
+    return false;
   }
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = {}
   urlDatabase[shortURL].longURL = req.body['longURL']
   urlDatabase[shortURL].username = req.cookies['username'];
-  console.log(`new short URL: ${shortURL} for: ${urlDatabase[shortURL]}`);
-  res.send(`/urls/${shortURL}`);  // show user their new URL
+  console.log(`new short URL: ${shortURL} for: ${urlDatabase[shortURL].longURL}`);
+  res.redirect(`/urls/${shortURL}`);  // show user their new URL
 });
 
 // adding a cookie on login
@@ -133,8 +133,8 @@ app.post('/logout', (req, res) => {
 
 // adding account creation functionality
 app.post('/register', (req, res) => {
-  console.log(users)
   const id = generateRandomString();
+
   if (!req.body.email || !req.body.password) {
     return res.status(400)
     .send('email or password field blank');
@@ -150,7 +150,7 @@ app.post('/register', (req, res) => {
     password: req.body.password
   };
   users[id] = newUser;
-  console.log(users)
+  console.log(users[id]);
   res.cookie('username', id);
   res.redirect('/');
 });
@@ -159,7 +159,7 @@ app.post('/register', (req, res) => {
 app.get('/urls/new', (req, res) => {
   if (!req.cookies['username']) {
     res.redirect('/login');
-    return;
+    return false;
   }
   const templateVars = {
     username: req.cookies['username']
@@ -167,6 +167,10 @@ app.get('/urls/new', (req, res) => {
   res.render('urls_new', templateVars)
 });
 app.get('/urls/:shortURL', (req, res) => {
+  if (req.cookies['username'] !== urlDatabase[req.params.shortURL].username) {
+    res.redirect('/');
+    return false;
+  }
   const templateVars = {
     username: req.cookies['username'],
     shortURL: req.params.shortURL,
@@ -175,7 +179,10 @@ app.get('/urls/:shortURL', (req, res) => {
   res.render('urls_show', templateVars);
 });
 app.get('/register', (req, res) => {
-  const id = req.cookies['id']
+  if (req.cookies['username']) {
+    res.redirect('/');
+  }
+  const id = req.cookies['username']
   const username = users[id];
   const templateVars = { username };
   res.render('create_account.ejs', templateVars);
@@ -183,6 +190,10 @@ app.get('/register', (req, res) => {
 app.get('/login', (req, res) => {
   const username = req.cookies['username'];
   const templateVars = { username }
+  if (username) {
+    res.redirect('/');
+    return false;
+  }
   res.render('login.ejs', templateVars)
 });
 app.get('/', (req, res) => res.redirect('/urls'));
@@ -190,7 +201,7 @@ app.get('/hello', (req, res) => res.send('<html><body>Hello <b>World</b></body><
 app.get('/urls', (req, res) => {
   if (!req.cookies['username']) {
     res.redirect('/login');
-    return;
+    return false;
   }
   const templateVars = {
     username: req.cookies['username'],
@@ -198,7 +209,13 @@ app.get('/urls', (req, res) => {
   }
   res.render('urls_index', templateVars);
 });
-app.get('/u/:shortURL', (req, res) => res.redirect(`/urls/${req.params.shortURL}`));
+app.get('/u/:shortURL', (req, res) => {
+  if (urlDatabase[req.params.shortURL]) {
+    res.redirect(urlDatabase[req.params.shortURL].longURL);
+  }
+  return res.status(403)
+    .send('unknown URL');
+});
 
 // message on app bootup
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
