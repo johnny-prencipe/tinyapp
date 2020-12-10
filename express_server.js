@@ -1,10 +1,12 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 const PORT = 8080;
 
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser())
 app.set('view engine', 'ejs')
 
 const urlDatabase = {
@@ -48,6 +50,17 @@ app.post('/urls/', (req, res) => {
   console.log(`new short URL: ${shortURL} for: ${urlDatabase[shortURL]}`);
   res.send(`/urls/${shortURL}`);  // show user their new URL
 });
+//adding a cookie on login
+app.post('/login', (req, res) => {
+  console.log('new user cookie:', req.body);
+  res.cookie('username', req.body.username);
+  res.redirect('/urls');
+});
+// adding logout functionality 
+app.post('/logout', (req, res) => {
+  res.clearCookie('username');
+  res.redirect('/urls');
+});
 
 // URL tree
 app.get('/urls/new', (req, res) => res.render('urls_new'));
@@ -58,11 +71,15 @@ app.get('/urls/:shortURL', (req, res) => {
   };
   res.render('urls_show', templateVars);
 });
-app.get('/', (req, res) => res.send('Hello!'));
+app.get('/', (req, res) => res.redirect('/urls'));
 app.get('/urls.json', (req, res) => res.send(urlDatabase));
 app.get('/hello', (req, res) => res.send('<html><body>Hello <b>World</b></body></html>\n'));
 app.get('/urls', (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  console.log(req.cookies);
+  const templateVars = {
+    username: req.cookies['username'],
+    urls: urlDatabase
+  }
   res.render('urls_index', templateVars);
 });
 app.get('/u/:shortURL', (req, res) => { 
