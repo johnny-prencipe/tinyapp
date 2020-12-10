@@ -69,9 +69,15 @@ app.post('/logout', (req, res) => {
 
 
 // URL tree
-app.get('/urls/new', (req, res) => res.render('urls_new'));
+app.get('/urls/new', (req, res) => {
+  const templateVars = {
+    username: req.cookies['username']
+  }
+  res.render('urls_new', templateVars)
+});
 app.get('/urls/:shortURL', (req, res) => {
   const templateVars = {
+    username: req.cookies['username'],
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL]
   };
