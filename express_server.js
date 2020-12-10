@@ -37,6 +37,16 @@ const getUserByEmail = email => {
   return false;
 }
 
+const urlsForUser = (name) => {
+  const returnObj = {};
+  for (let i in urlDatabase) {
+    if (urlDatabase[i].username === name) {
+      returnObj[i] = urlDatabase[i];
+    }
+  }
+  return returnObj;
+}
+
 const generateRandomString = () => {
   returnStr = ''
   let chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
@@ -49,6 +59,10 @@ const generateRandomString = () => {
 // post logic for when a form is submitted
 // deleting a URL
 app.post('/urls/:url/delete', (req, res) => {
+  if (!urlsForUser(username)[req.params.shortURL]) {
+    res.redirect('/');
+    return false;
+  }
   delete urlDatabase[req.params.url];
   console.log(req.params, 'deleted');
   res.redirect('/urls');
@@ -56,6 +70,10 @@ app.post('/urls/:url/delete', (req, res) => {
 
 // updating a URL, after checking to see if it exists
 app.post('/urls/:url/update', (req, res) => {
+  if (!urlsForUser(username)[req.params.shortURL]) {
+    res.redirect('/');
+    return false;
+  }
   if (!urlDatabase[req.params.url]) {
     res.redirect('/urls')
     console.log('Error: no such URL:', req.params.url);
@@ -66,6 +84,10 @@ app.post('/urls/:url/update', (req, res) => {
 
 // making edit buttons to redirect to the edit page
 app.post('/urls/:url', (req, res) => {
+  if (!urlsForUser(username)[req.params.shortURL]) {
+    res.redirect('/');
+    return false;
+  }
   res.redirect(`/urls/${req.params.url}`);
 });
 
@@ -74,7 +96,7 @@ app.post('/urls/', (req, res) => {
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = {}
   urlDatabase[shortURL].longURL = req.body['longURL']
-  urlDatabase[shortURL].cookies = req.cookies['username'];
+  urlDatabase[shortURL].username = req.cookies['username'];
   console.log(`new short URL: ${shortURL} for: ${urlDatabase[shortURL]}`);
   res.send(`/urls/${shortURL}`);  // show user their new URL
 });
@@ -150,25 +172,23 @@ app.get('/register', (req, res) => {
   res.render('create_account.ejs', templateVars);
 });
 app.get('/login', (req, res) => {
-  const username = req.cookies["username"];
+  const username = req.cookies['username'];
   const templateVars = { username }
   res.render('login.ejs', templateVars)
 });
 app.get('/', (req, res) => res.redirect('/urls'));
-app.get('/urls.json', (req, res) => res.send(urlDatabase));
 app.get('/hello', (req, res) => res.send('<html><body>Hello <b>World</b></body></html>\n'));
 app.get('/urls', (req, res) => {
+  if (!req.cookies['username']) {
+    res.redirect('/login');
+  }
   const templateVars = {
     username: req.cookies['username'],
     urls: urlDatabase
   }
   res.render('urls_index', templateVars);
 });
-app.get('/u/:shortURL', (req, res) => { 
-  const longURL = urlDatabase[req.params.shortURL].longURL; 
-  console.log(longURL); 
-  res.redirect(longURL); 
-});
+app.get('/u/:shortURL', (req, res) => res.redirect(`/urls/${req.params.shortURL}`));
 
 // message on app bootup
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
