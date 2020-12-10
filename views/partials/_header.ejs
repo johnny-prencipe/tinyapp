@@ -14,12 +14,13 @@
     <form class="align-right" action="/login" method="POST">
       <input class="form-control" type="text" name="username" placeholder="Username" style="width: 200px; margin: 0em">
       <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+    
     <% } else { %>
       <form class="align-right" action="/logout" method="POST">
         Hi, <%= username %>.
         <button type="submit" class="btn btn-primary">Logout</button>
       </form>
     <% } %>
-    </form>
   </nav>
 </header>
