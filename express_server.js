@@ -28,6 +28,15 @@ const users = {
   }
 }
 
+const getUserByEmail = email => {
+  for (let user in users) {
+    if (users[user].email === email) {
+      return user;
+    }
+  }
+  return false;
+}
+
 const generateRandomString = () => {
   returnStr = ''
   let chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
@@ -85,6 +94,13 @@ app.post('/logout', (req, res) => {
 app.post('/register', (req, res) => {
   console.log(users)
   const id = generateRandomString();
+  if (!req.body.email || !req.body.password) {
+    return res.status(400).send('email or password field blank');
+  }
+  if (getUserByEmail) {
+    return res.status(400).send('email already exists');
+  }
+
 
   const newUser = {
     id,
@@ -113,8 +129,13 @@ app.get('/urls/:shortURL', (req, res) => {
   res.render('urls_show', templateVars);
 });
 app.get('/register', (req, res) => {
-  const templateVars = { username: req.cookies['username'] };
+  const id = req.cookies['id'];
+  const username = users[id];
+  const templateVars = { username };
   res.render('create_account.ejs', templateVars);
+});
+app.get('/login', (req, res) => {
+  
 });
 app.get('/', (req, res) => res.redirect('/urls'));
 app.get('/urls.json', (req, res) => res.send(urlDatabase));
