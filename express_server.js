@@ -31,7 +31,7 @@ const users = {
 const getUserByEmail = email => {
   for (let user in users) {
     if (users[user].email === email) {
-      return user;
+      return users[user];
     }
   }
   return false;
@@ -79,8 +79,16 @@ app.post('/urls/', (req, res) => {
 
 // adding a cookie on login
 app.post('/login', (req, res) => {
-  console.log('new user cookie:', req.body);
-  res.cookie('username', req.body.username);
+  const email = req.body.email;
+  const pw = req.body.password;
+  const id = getUserByEmail(email);
+  console.log(id);
+
+  if (id.email !== email || id.password !== pw) {
+    return res.status(403)
+    .send('bad parameters')
+  }
+  res.cookie('username', id.id);
   res.redirect('/urls');
 });
 
@@ -95,12 +103,13 @@ app.post('/register', (req, res) => {
   console.log(users)
   const id = generateRandomString();
   if (!req.body.email || !req.body.password) {
-    return res.status(400).send('email or password field blank');
+    return res.status(400)
+    .send('email or password field blank');
   }
-  if (getUserByEmail) {
-    return res.status(400).send('email already exists');
+  if (getUserByEmail(req.body.email)) {
+    return res.status(400)
+    .send('email already exists');
   }
-
 
   const newUser = {
     id,
@@ -116,6 +125,7 @@ app.post('/register', (req, res) => {
 // URL tree
 app.get('/urls/new', (req, res) => {
   const templateVars = {
+
     username: req.cookies['username']
   }
   res.render('urls_new', templateVars)
@@ -129,13 +139,15 @@ app.get('/urls/:shortURL', (req, res) => {
   res.render('urls_show', templateVars);
 });
 app.get('/register', (req, res) => {
-  const id = req.cookies['id'];
+  const id = req.cookies['id']
   const username = users[id];
   const templateVars = { username };
   res.render('create_account.ejs', templateVars);
 });
 app.get('/login', (req, res) => {
-  
+  const username = req.cookies["username"];
+  const templateVars = { username }
+  res.render('login.ejs', templateVars)
 });
 app.get('/', (req, res) => res.redirect('/urls'));
 app.get('/urls.json', (req, res) => res.send(urlDatabase));
