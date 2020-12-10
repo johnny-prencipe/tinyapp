@@ -19,7 +19,7 @@
 
     <% } else { %>
       <form class="align-right" action="/logout" method="POST">
-        Hi, <%= username %>.
+        Hi, <%= [username].email %>.
         <button type="submit" class="btn btn-primary">Logout</button>
       </form>
     <% } %>

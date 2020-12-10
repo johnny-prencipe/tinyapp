@@ -9,16 +9,30 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser())
 app.set('view engine', 'ejs')
 
+
 const urlDatabase = {
   'b2xVn2': 'http://www.lighthouselabs.ca',
   '9sm5xK': 'http://www.google.com'
+}
+
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
 }
 
 const generateRandomString = () => {
   returnStr = ''
   let chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
   for (let i = 0; i < 6; i++) {
-    returnStr += chars[Math.floor(Math.random() * chars.length) + 1]
+    returnStr += chars[Math.floor(Math.random() * chars.length)]
   };
   return returnStr;
 }
@@ -54,7 +68,7 @@ app.post('/urls/', (req, res) => {
   res.send(`/urls/${shortURL}`);  // show user their new URL
 });
 
-//adding a cookie on login
+// adding a cookie on login
 app.post('/login', (req, res) => {
   console.log('new user cookie:', req.body);
   res.cookie('username', req.body.username);
@@ -67,6 +81,21 @@ app.post('/logout', (req, res) => {
   res.redirect('/urls');
 });
 
+// adding account creation functionality
+app.post('/register', (req, res) => {
+  console.log(users)
+  const id = generateRandomString();
+
+  const newUser = {
+    id,
+    email: req.body.email,
+    password: req.body.password
+  };
+  users[id] = newUser;
+  console.log(users)
+  res.cookie('username', id);
+  res.redirect('/');
+});
 
 // URL tree
 app.get('/urls/new', (req, res) => {
@@ -83,11 +112,14 @@ app.get('/urls/:shortURL', (req, res) => {
   };
   res.render('urls_show', templateVars);
 });
+app.get('/register', (req, res) => {
+  const templateVars = { username: req.cookies['username'] };
+  res.render('create_account.ejs', templateVars);
+});
 app.get('/', (req, res) => res.redirect('/urls'));
 app.get('/urls.json', (req, res) => res.send(urlDatabase));
 app.get('/hello', (req, res) => res.send('<html><body>Hello <b>World</b></body></html>\n'));
 app.get('/urls', (req, res) => {
-  console.log(req.cookies);
   const templateVars = {
     username: req.cookies['username'],
     urls: urlDatabase
