@@ -72,7 +72,9 @@ app.post('/urls/:url', (req, res) => {
 // making a new shortURL
 app.post('/urls/', (req, res) => {
   const shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body['longURL'];
+  urlDatabase[shortURL] = {}
+  urlDatabase[shortURL].longURL = req.body['longURL']
+  urlDatabase[shortURL].cookies = req.cookies['username'];
   console.log(`new short URL: ${shortURL} for: ${urlDatabase[shortURL]}`);
   res.send(`/urls/${shortURL}`);  // show user their new URL
 });
@@ -124,8 +126,11 @@ app.post('/register', (req, res) => {
 
 // URL tree
 app.get('/urls/new', (req, res) => {
+  if (!req.cookies['username']) {
+    res.redirect('/login');
+    return;
+  }
   const templateVars = {
-
     username: req.cookies['username']
   }
   res.render('urls_new', templateVars)
@@ -160,7 +165,7 @@ app.get('/urls', (req, res) => {
   res.render('urls_index', templateVars);
 });
 app.get('/u/:shortURL', (req, res) => { 
-  const longURL = urlDatabase[req.params['shortURL']]; 
+  const longURL = urlDatabase[req.params.shortURL].longURL; 
   console.log(longURL); 
   res.redirect(longURL); 
 });
