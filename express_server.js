@@ -121,8 +121,9 @@ app.post('/login', (req, res) => {
   const plaintextPw = req.body.password;
   const id = getUserByEmail(email);
   console.log(id);
+  console.log(bcrypt.compareSync(plaintextPw, id.password))
 
-  if (id.email !== email || !bcrypt.compare(plaintextPw, id.password)) {
+  if (id.email !== email || !bcrypt.compareSync(plaintextPw, id.password)) {
     return res.status(403)
     .send('bad parameters')
   }
