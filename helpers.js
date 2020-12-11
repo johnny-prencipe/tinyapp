@@ -5,7 +5,7 @@ const getUserByEmail = (email, database) => {
     }
   }
   return false;
-}
+};
 
 const urlsForUser = (name, database) => {
   const returnObj = {};
@@ -15,18 +15,18 @@ const urlsForUser = (name, database) => {
     }
   }
   return returnObj;
-}
+};
 
 const generateRandomString = () => {
-  returnStr = ''
-  let chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+  let returnStr = '';
+  let chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
   for (let i = 0; i < 6; i++) {
-    returnStr += chars[Math.floor(Math.random() * chars.length)]
-  };
+    returnStr += chars[Math.floor(Math.random() * chars.length)];
+  }
   return returnStr;
-}
+};
 
-module.exports = { 
+module.exports = {
   getUserByEmail,
   urlsForUser,
   generateRandomString

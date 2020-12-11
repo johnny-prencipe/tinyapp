@@ -1,24 +1,24 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const cookieSession = require('cookie-session')
+const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const app = express();
 const PORT = 8080;
-const urlDatabase = {}
-const users = {}
-const { 
+const urlDatabase = {};
+const users = {};
+const {
   getUserByEmail,
   urlsForUser,
   generateRandomString
- } = require('./helpers')
+} = require('./helpers');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieSession({
   name: 'session',
   secret: 'verysecure'
-}))
-app.set('view engine', 'ejs')
+}));
+app.set('view engine', 'ejs');
 
 
 /*###########################
@@ -37,7 +37,7 @@ app.post('/urls/:url/delete', (req, res) => {
 
   delete urlDatabase[req.params.url];
   res.redirect('/urls');
-})
+});
 
 
 // Updates a URL
@@ -50,7 +50,7 @@ app.post('/urls/:url/update', (req, res) => {
   }
 
   if (!urlDatabase[req.params.url]) {
-    res.redirect('/urls')
+    res.redirect('/urls');
     return false;
   }
 
@@ -80,8 +80,8 @@ app.post('/urls/', (req, res) => {
 
   const shortURL = generateRandomString();
 
-  urlDatabase[shortURL] = {}
-  urlDatabase[shortURL].longURL = req.body['longURL']
+  urlDatabase[shortURL] = {};
+  urlDatabase[shortURL].longURL = req.body['longURL'];
   urlDatabase[shortURL].username = req.session.user_id;
 
   res.redirect(`/urls/${shortURL}`);  // show user their new URL
@@ -97,7 +97,7 @@ app.post('/login', (req, res) => {
 
   if (id.email !== email || !bcrypt.compare(plaintextPw, id.password)) {
     return res.status(403)
-    .send('bad parameters')
+      .send('bad parameters');
   }
 
   req.session.user_id = id.id;
@@ -118,17 +118,17 @@ app.post('/register', (req, res) => {
   const id = generateRandomString();
   if (!req.body.email || !req.body.password) {
     return res.status(400)
-    .send('email or password field blank');
+      .send('email or password field blank');
   }
 
   if (getUserByEmail(req.body.email, users)) {
     return res.status(400)
-    .send('email already exists');
+      .send('email already exists');
   }
 
   const plaintextPw = req.body.password;
 
-  const hashedPw = bcrypt.hashSync(plaintextPw, saltRounds, function (err, hash) {
+  const hashedPw = bcrypt.hashSync(plaintextPw, saltRounds, function(err, hash) {
 
     if (err) {
       res.redirect('/register');
@@ -156,7 +156,7 @@ app.post('/register', (req, res) => {
 /** Check if a user is logged in,
  * and redirecting them to the login or register
  * screen if they are. Otherwise, display the
- * requested page. 
+ * requested page.
  **/
 
 app.get('/urls/new', (req, res) => {
@@ -168,9 +168,9 @@ app.get('/urls/new', (req, res) => {
   
   const templateVars = {
     username: req.session.user_id
-  }
+  };
 
-  res.render('urls_new', templateVars)
+  res.render('urls_new', templateVars);
 });
 
 
@@ -197,7 +197,7 @@ app.get('/register', (req, res) => {
     res.redirect('/');
   }
 
-  const id = req.session.user_id
+  const id = req.session.user_id;
   const username = users[id];
   const templateVars = { username };
 
@@ -207,14 +207,14 @@ app.get('/register', (req, res) => {
 
 app.get('/login', (req, res) => {
   const username = req.session.user_id;
-  const templateVars = { username }
+  const templateVars = { username };
 
   if (username) {
     res.redirect('/');
     return false;
   }
 
-  res.render('login.ejs', templateVars)
+  res.render('login.ejs', templateVars);
 });
 
 
@@ -228,7 +228,7 @@ app.get('/urls', (req, res) => {
   const templateVars = {
     username: req.session.user_id,
     urls: urlDatabase
-  }
+  };
   
   res.render('urls_index', templateVars);
 });
@@ -241,7 +241,7 @@ app.get('/u/:shortURL', (req, res) => {
   }
   
   return res.status(403)
-  .send('unknown URL');
+    .send('unknown URL');
 });
 
 app.get('/', (req, res) => res.redirect('/urls'));
