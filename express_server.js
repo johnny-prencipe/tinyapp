@@ -21,9 +21,12 @@ app.use(cookieSession({
 app.set('view engine', 'ejs')
 
 
-// post logic for when a form is submitted
-// deleting a URL
+/*###########################
+###### App POST Logic  ######
+############################*/
 
+
+// Deletes a URL
 app.post('/urls/:url/delete', (req, res) => {
   const username = req.session.user_id;
 
@@ -36,7 +39,8 @@ app.post('/urls/:url/delete', (req, res) => {
   res.redirect('/urls');
 })
 
-// updating a URL, after checking to see if it exists
+
+// Updates a URL
 app.post('/urls/:url/update', (req, res) => {
   const username = req.session.user_id;
 
@@ -54,7 +58,8 @@ app.post('/urls/:url/update', (req, res) => {
   res.redirect('/');
 });
 
-// making edit buttons to redirect to the edit page
+
+// Editing a URL
 app.post('/urls/:url', (req, res) => {
 
   if (!urlsForUser(req.session.user_id, urlDatabase)[req.params.shortURL]) {
@@ -65,7 +70,7 @@ app.post('/urls/:url', (req, res) => {
   res.redirect(`/urls/${req.params.url}`);
 });
 
-// making a new shortURL
+// Posting a new ShortURL
 app.post('/urls/', (req, res) => {
 
   if (!req.session.user_id) {
@@ -82,7 +87,8 @@ app.post('/urls/', (req, res) => {
   res.redirect(`/urls/${shortURL}`);  // show user their new URL
 });
 
-// adding a cookie on login
+
+// Creating a new cookie
 app.post('/login', (req, res) => {
 
   const email = req.body.email;
@@ -98,13 +104,15 @@ app.post('/login', (req, res) => {
   res.redirect('/urls');
 });
 
-// adding logout functionality 
+
+// Logs user out
 app.post('/logout', (req, res) => {
   req.session = null;
   res.redirect('/urls');
 });
 
-// adding account creation functionality
+
+// Registers a new account
 app.post('/register', (req, res) => {
 
   const id = generateRandomString();
@@ -140,7 +148,17 @@ app.post('/register', (req, res) => {
   res.redirect('/');
 });
 
-// URL tree
+
+/*##########################
+###### App GET Logic  ######
+##########################*/
+
+/** Check if a user is logged in,
+ * and redirecting them to the login or register
+ * screen if they are. Otherwise, display the
+ * requested page. 
+ **/
+
 app.get('/urls/new', (req, res) => {
 
   if (!req.session.user_id) {
@@ -154,6 +172,8 @@ app.get('/urls/new', (req, res) => {
 
   res.render('urls_new', templateVars)
 });
+
+
 app.get('/urls/:shortURL', (req, res) => {
 
   if (req.session.user_id !== urlDatabase[req.params.shortURL].username) {
@@ -170,6 +190,7 @@ app.get('/urls/:shortURL', (req, res) => {
   res.render('urls_show', templateVars);
 });
 
+
 app.get('/register', (req, res) => {
 
   if (req.session.user_id) {
@@ -183,6 +204,7 @@ app.get('/register', (req, res) => {
   res.render('create_account.ejs', templateVars);
 });
 
+
 app.get('/login', (req, res) => {
   const username = req.session.user_id;
   const templateVars = { username }
@@ -195,34 +217,36 @@ app.get('/login', (req, res) => {
   res.render('login.ejs', templateVars)
 });
 
-app.get('/', (req, res) => res.redirect('/urls'));
-
-app.get('/hello', (req, res) => res.send('<html><body>Hello <b>World</b></body></html>\n'));
 
 app.get('/urls', (req, res) => {
-
+  
   if (!req.session.user_id) {
     res.redirect('/login');
     return false;
   }
-
+  
   const templateVars = {
     username: req.session.user_id,
     urls: urlDatabase
   }
-
+  
   res.render('urls_index', templateVars);
 });
 
-app.get('/u/:shortURL', (req, res) => {
 
+app.get('/u/:shortURL', (req, res) => {
+  
   if (urlDatabase[req.params.shortURL]) {
     res.redirect(urlDatabase[req.params.shortURL].longURL);
   }
   
   return res.status(403)
-    .send('unknown URL');
+  .send('unknown URL');
 });
+
+app.get('/', (req, res) => res.redirect('/urls'));
+
+app.get('/hello', (req, res) => res.send('<html><body>Hello <b>World</b></body></html>\n'));
 
 // message on app bootup
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
