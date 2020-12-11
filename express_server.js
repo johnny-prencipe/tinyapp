@@ -3,9 +3,12 @@ const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session')
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
-
 const app = express();
 const PORT = 8080;
+const { 
+  getUserByEmail,
+  urlsForUser
+ } = require('./helpers')
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieSession({
@@ -35,24 +38,6 @@ const users = {
   }
 }
 
-const getUserByEmail = (email, database) => {
-  for (let user in database) {
-    if (database[user].email === email) {
-      return database[user];
-    }
-  }
-  return false;
-}
-
-const urlsForUser = (name) => {
-  const returnObj = {};
-  for (let i in urlDatabase) {
-    if (urlDatabase[i].username === name) {
-      returnObj[i] = urlDatabase[i];
-    }
-  }
-  return returnObj;
-}
 
 const generateRandomString = () => {
   returnStr = ''
@@ -67,7 +52,7 @@ const generateRandomString = () => {
 // deleting a URL
 app.post('/urls/:url/delete', (req, res) => {
   const username = req.session.user_id;
-  if (!urlsForUser(username)[req.params.url]) {
+  if (!urlsForUser(username, urlDatabase)[req.params.url]) {
     res.redirect('/');
     return false;
   }
@@ -79,7 +64,7 @@ app.post('/urls/:url/delete', (req, res) => {
 // updating a URL, after checking to see if it exists
 app.post('/urls/:url/update', (req, res) => {
   const username = req.session.user_id;
-  if (!urlsForUser(username)[req.params.url]) {
+  if (!urlsForUser(username, urlDatabase)[req.params.url]) {
     res.redirect('/');
     return false;
   }
@@ -89,6 +74,7 @@ app.post('/urls/:url/update', (req, res) => {
     return false;
   }
   console.log(`Updating ${req.params.url} from ${urlDatabase[req.params.url].longURL} to ${req.body.longURL}`)
+  console.log(urlDatabase);
   urlDatabase[req.params.url].longURL = req.body.longURL;
   console.log('Successfully updated.')
   res.redirect('/');
@@ -96,7 +82,7 @@ app.post('/urls/:url/update', (req, res) => {
 
 // making edit buttons to redirect to the edit page
 app.post('/urls/:url', (req, res) => {
-  if (!urlsForUser(req.session.user_id)[req.params.shortURL]) {
+  if (!urlsForUser(req.session.user_id, urlDatabase)[req.params.shortURL]) {
     res.redirect('/');
     return false;
   }
