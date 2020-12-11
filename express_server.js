@@ -1,6 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 const app = express();
 const PORT = 8080;
@@ -113,11 +115,11 @@ app.post('/urls/', (req, res) => {
 // adding a cookie on login
 app.post('/login', (req, res) => {
   const email = req.body.email;
-  const pw = req.body.password;
+  const plaintextPw = req.body.password;
   const id = getUserByEmail(email);
   console.log(id);
 
-  if (id.email !== email || id.password !== pw) {
+  if (id.email !== email || !bcrypt.compare(plaintextPw, id.password)) {
     return res.status(403)
     .send('bad parameters')
   }
@@ -134,7 +136,6 @@ app.post('/logout', (req, res) => {
 // adding account creation functionality
 app.post('/register', (req, res) => {
   const id = generateRandomString();
-
   if (!req.body.email || !req.body.password) {
     return res.status(400)
     .send('email or password field blank');
@@ -143,11 +144,20 @@ app.post('/register', (req, res) => {
     return res.status(400)
     .send('email already exists');
   }
+  const plaintextPw = req.body.password;
+  const hashedPw = bcrypt.hashSync(plaintextPw, saltRounds, function (err, hash) {
+    if (err) {
+      console.log('Something went wrong:', err);
+      res.redirect('/register');
+      return;
+    }
+    return hash;
+  });
 
   const newUser = {
     id,
     email: req.body.email,
-    password: req.body.password
+    password: hashedPw
   };
   users[id] = newUser;
   console.log(users[id]);
@@ -179,6 +189,8 @@ app.get('/urls/:shortURL', (req, res) => {
   res.render('urls_show', templateVars);
 });
 app.get('/register', (req, res) => {
+  // This if statement throws an error, not sure why.
+  // seems to be working fine && redirects as intended
   if (req.cookies['username']) {
     res.redirect('/');
   }
