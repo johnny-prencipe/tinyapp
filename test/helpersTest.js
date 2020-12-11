@@ -2,7 +2,8 @@ const { assert } = require('chai');
 
 const { 
   getUserByEmail,
-  urlsForUser
+  urlsForUser,
+  generateRandomString
 } = require('../helpers.js');
 
 /*#######################################
@@ -46,6 +47,7 @@ describe('getUserByEmail', function() {
     assert.equal(user.id, expectedOutput);
   });
 });
+
 /*####################################
 ###### Tests for urlsForUser()  ######
 ######################################*/
@@ -59,7 +61,6 @@ const urlDatabase = {
 describe('urlsForUser', function() {
   it('should return a valid object for a valid ID', function() {
     const user = urlsForUser("userRandomID", urlDatabase)
-    console.log(user);
     const expectedOutput = {'b2xVn2': { longURL: 'http://www.lighthouselabs.ca', username: 'userRandomID'}};
     assert.deepEqual(user, expectedOutput);
   });
@@ -78,6 +79,24 @@ describe('urlsForUser', function() {
     const user = urlsForUser("", urlDatabase)
     const expectedOutput = {};
     assert.deepEqual(user, expectedOutput);
+  });
+});
+
+/*#############################################
+###### Tests for generateRandomString()  ######
+#############################################*/
+
+describe('generateRandomString', function() {
+  it('should return a string', function() {
+    const randomString = generateRandomString()
+    assert.isString(randomString);
+  });
+});
+
+describe('generateRandomString', function() {
+  it('should be 6 characters long', function() {
+    const randomString = generateRandomString()
+    assert.equal(randomString.length, 6);
   });
 });
 
