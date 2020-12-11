@@ -11,11 +11,13 @@ app.set('view engine', 'ejs')
 
 
 const urlDatabase = {
+  // driver code
   'b2xVn2': { longURL: 'http://www.lighthouselabs.ca', username: 'userRandomID'},
   '9sm5xK': { longURL: 'http://www.google.com', username: 'user2RandomID' }
 }
 
 const users = { 
+  //driver code
   'userRandomID': {
     id: 'userRandomID', 
     email: 'user@example.com', 
@@ -28,10 +30,10 @@ const users = {
   }
 }
 
-const getUserByEmail = email => {
-  for (let user in users) {
-    if (users[user].email === email) {
-      return users[user];
+const getUserByEmail = (email, database) => {
+  for (let user in database) {
+    if (database[user].email === email) {
+      return database[user];
     }
   }
   return false;
@@ -114,7 +116,7 @@ app.post('/urls/', (req, res) => {
 app.post('/login', (req, res) => {
   const email = req.body.email;
   const pw = req.body.password;
-  const id = getUserByEmail(email);
+  const id = getUserByEmail(email, users);
   console.log(id);
 
   if (id.email !== email || id.password !== pw) {
@@ -139,7 +141,7 @@ app.post('/register', (req, res) => {
     return res.status(400)
     .send('email or password field blank');
   }
-  if (getUserByEmail(req.body.email)) {
+  if (getUserByEmail(req.body.email), users) {
     return res.status(400)
     .send('email already exists');
   }
