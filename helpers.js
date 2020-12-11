@@ -17,7 +17,17 @@ const urlsForUser = (name, database) => {
   return returnObj;
 }
 
+const generateRandomString = () => {
+  returnStr = ''
+  let chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+  for (let i = 0; i < 6; i++) {
+    returnStr += chars[Math.floor(Math.random() * chars.length)]
+  };
+  return returnStr;
+}
+
 module.exports = { 
   getUserByEmail,
-  urlsForUser
+  urlsForUser,
+  generateRandomString
 };

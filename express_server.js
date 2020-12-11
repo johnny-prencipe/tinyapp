@@ -7,7 +7,8 @@ const app = express();
 const PORT = 8080;
 const { 
   getUserByEmail,
-  urlsForUser
+  urlsForUser,
+  generateRandomString
  } = require('./helpers')
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -17,36 +18,8 @@ app.use(cookieSession({
 }))
 app.set('view engine', 'ejs')
 
-
-const urlDatabase = {
-  // driver code
-  'b2xVn2': { longURL: 'http://www.lighthouselabs.ca', username: 'userRandomID'},
-  '9sm5xK': { longURL: 'http://www.google.com', username: 'user2RandomID' }
-}
-
-const users = { 
-  //driver code
-  'userRandomID': {
-    id: 'userRandomID', 
-    email: 'user@example.com', 
-    password: 'purple-monkey-dinosaur'
-  },
- 'user2RandomID': {
-    id: 'user2RandomID', 
-    email: 'user2@example.com', 
-    password: 'dishwasher-funk'
-  }
-}
-
-
-const generateRandomString = () => {
-  returnStr = ''
-  let chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
-  for (let i = 0; i < 6; i++) {
-    returnStr += chars[Math.floor(Math.random() * chars.length)]
-  };
-  return returnStr;
-}
+const urlDatabase = {}
+const users = {}
 
 // post logic for when a form is submitted
 // deleting a URL
@@ -57,7 +30,6 @@ app.post('/urls/:url/delete', (req, res) => {
     return false;
   }
   delete urlDatabase[req.params.url];
-  console.log(req.params, 'deleted');
   res.redirect('/urls');
 })
 
@@ -70,13 +42,9 @@ app.post('/urls/:url/update', (req, res) => {
   }
   if (!urlDatabase[req.params.url]) {
     res.redirect('/urls')
-    console.log('Error: no such URL:', req.params.url);
     return false;
   }
-  console.log(`Updating ${req.params.url} from ${urlDatabase[req.params.url].longURL} to ${req.body.longURL}`)
-  console.log(urlDatabase);
   urlDatabase[req.params.url].longURL = req.body.longURL;
-  console.log('Successfully updated.')
   res.redirect('/');
 });
 
@@ -99,7 +67,6 @@ app.post('/urls/', (req, res) => {
   urlDatabase[shortURL] = {}
   urlDatabase[shortURL].longURL = req.body['longURL']
   urlDatabase[shortURL].username = req.session.user_id;
-  console.log(`new short URL: ${shortURL} for: ${urlDatabase[shortURL].longURL}`);
   res.redirect(`/urls/${shortURL}`);  // show user their new URL
 });
 
@@ -108,14 +75,12 @@ app.post('/login', (req, res) => {
   const email = req.body.email;
   const plaintextPw = req.body.password;
   const id = getUserByEmail(email, users);
-  console.log(id);
-
-  console.log(bcrypt.compare(plaintextPw, id.password))
 
   if (id.email !== email || !bcrypt.compare(plaintextPw, id.password)) {
     return res.status(403)
     .send('bad parameters')
   }
+
   req.session.user_id = id.id;
   res.redirect('/urls');
 });
@@ -135,8 +100,6 @@ app.post('/register', (req, res) => {
     .send('email or password field blank');
   }
 
-  console.log(req.body.email);
-
   if (getUserByEmail(req.body.email, users)) {
     return res.status(400)
     .send('email already exists');
@@ -146,7 +109,6 @@ app.post('/register', (req, res) => {
 
   const hashedPw = bcrypt.hashSync(plaintextPw, saltRounds, function (err, hash) {
     if (err) {
-      console.log('Something went wrong:', err);
       res.redirect('/register');
       return;
     }
@@ -158,8 +120,8 @@ app.post('/register', (req, res) => {
     email: req.body.email,
     password: hashedPw
   };
+  
   users[id] = newUser;
-  console.log(users[id]);
   req.session.user_id = id;
   res.redirect('/');
 });
