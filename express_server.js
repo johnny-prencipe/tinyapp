@@ -123,9 +123,10 @@ app.post('/login', (req, res) => {
   const plaintextPw = req.body.password;
   const id = getUserByEmail(email, users);
   console.log(id);
-  console.log(bcrypt.compareSync(plaintextPw, id.password))
 
-  if (id.email !== email || !bcrypt.compareSync(plaintextPw, id.password)) {
+  console.log(bcrypt.compare(plaintextPw, id.password))
+
+  if (id.email !== email || !bcrypt.compare(plaintextPw, id.password)) {
     return res.status(403)
     .send('bad parameters')
   }
@@ -141,16 +142,22 @@ app.post('/logout', (req, res) => {
 
 // adding account creation functionality
 app.post('/register', (req, res) => {
+
   const id = generateRandomString();
   if (!req.body.email || !req.body.password) {
     return res.status(400)
     .send('email or password field blank');
   }
-  if (getUserByEmail(req.body.email), users) {
+
+  console.log(req.body.email);
+
+  if (getUserByEmail(req.body.email, users)) {
     return res.status(400)
     .send('email already exists');
   }
+
   const plaintextPw = req.body.password;
+
   const hashedPw = bcrypt.hashSync(plaintextPw, saltRounds, function (err, hash) {
     if (err) {
       console.log('Something went wrong:', err);
