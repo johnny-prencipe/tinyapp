@@ -26,8 +26,26 @@ const generateRandomString = () => {
   return returnStr;
 };
 
+const validUserCheck = (req, res, database) => {
+  const username = req.session.user_id;
+  if (!urlsForUser(username, database)[req.params.url]) {
+    res.redirect('/');
+    return false;
+  }
+}
+
+
+const isLoggedIn = (req, res) => {
+  if (!req.session.user_id) {
+    res.redirect('/login');
+    return false;
+  }
+}
+
 module.exports = {
   getUserByEmail,
   urlsForUser,
-  generateRandomString
+  generateRandomString,
+  validUserCheck,
+  isLoggedIn
 };

@@ -9,8 +9,9 @@ const urlDatabase = {};
 const users = {};
 const {
   getUserByEmail,
-  urlsForUser,
-  generateRandomString
+  generateRandomString,
+  validUserCheck,
+  isLoggedIn
 } = require('./helpers');
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -25,16 +26,9 @@ app.set('view engine', 'ejs');
 ###### App POST Logic  ######
 ############################*/
 
-
 // Deletes a URL
 app.post('/urls/:url/delete', (req, res) => {
-  const username = req.session.user_id;
-
-  if (!urlsForUser(username, urlDatabase)[req.params.url]) {
-    res.redirect('/');
-    return false;
-  }
-
+  validUserCheck(req, res, urlDatabase);
   delete urlDatabase[req.params.url];
   res.redirect('/urls');
 });
@@ -42,12 +36,7 @@ app.post('/urls/:url/delete', (req, res) => {
 
 // Updates a URL
 app.post('/urls/:url/update', (req, res) => {
-  const username = req.session.user_id;
-
-  if (!urlsForUser(username, urlDatabase)[req.params.url]) {
-    res.redirect('/');
-    return false;
-  }
+  validUserCheck(req, res, urlDatabase);
 
   if (!urlDatabase[req.params.url]) {
     res.redirect('/urls');
@@ -61,22 +50,13 @@ app.post('/urls/:url/update', (req, res) => {
 
 // Editing a URL
 app.post('/urls/:url', (req, res) => {
-
-  if (!urlsForUser(req.session.user_id, urlDatabase)[req.params.shortURL]) {
-    res.redirect('/');
-    return false;
-  }
-
+  validUserCheck(req, res, urlDatabase);
   res.redirect(`/urls/${req.params.url}`);
 });
 
 // Posting a new ShortURL
 app.post('/urls/', (req, res) => {
-
-  if (!req.session.user_id) {
-    res.redirect('/');
-    return false;
-  }
+  isLoggedIn(req, res);
 
   const shortURL = generateRandomString();
 
@@ -159,12 +139,9 @@ app.post('/register', (req, res) => {
  * requested page.
  **/
 
-app.get('/urls/new', (req, res) => {
 
-  if (!req.session.user_id) {
-    res.redirect('/login');
-    return false;
-  }
+app.get('/urls/new', (req, res) => {
+  isLoggedIn(req, res)
   
   const templateVars = {
     username: req.session.user_id
@@ -176,6 +153,7 @@ app.get('/urls/new', (req, res) => {
 
 app.get('/urls/:shortURL', (req, res) => {
 
+  console.log(req.params);
   if (req.session.user_id !== urlDatabase[req.params.shortURL].username) {
     res.redirect('/');
     return false;
@@ -219,11 +197,7 @@ app.get('/login', (req, res) => {
 
 
 app.get('/urls', (req, res) => {
-  
-  if (!req.session.user_id) {
-    res.redirect('/login');
-    return false;
-  }
+  isLoggedIn(req, res);
   
   const templateVars = {
     username: req.session.user_id,
