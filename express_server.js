@@ -24,7 +24,7 @@ app.set('view engine', 'ejs');
 
 /*###########################
 ###### App POST Logic  ######
-############################*/
+###########################*/
 
 // Deletes a URL
 app.post('/urls/:url/delete', (req, res) => {
@@ -136,7 +136,7 @@ app.post('/register', (req, res) => {
 
 /** Check if a user is logged in,
  * and redirecting them to the login or register
- * screen if they are. Otherwise, display the
+ * screen if they are not. Otherwise, display the
  * requested page.
  **/
 
