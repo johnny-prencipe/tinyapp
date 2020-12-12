@@ -10,7 +10,7 @@
 </head>
 <body>
 
-  <%- include ('partials/_header', {username: username}) %>
+  <%- include ('partials/_header', {user: user}) %>
 
   <main style="margin: 1em;">
     <h3>My URLs</h3>
@@ -26,13 +26,11 @@
       <tbody>
         <% for(let url in urls) { %>
           <tr>
-            <% if (urls[url].username === username) { %>
+            <% if (urls[url].user_id === user.id) { %>
             <td><%= url %></td>
             <td><%= urls[url].longURL %></td>
             <td>
-              <form method="GET" action="/urls/<%= url %>">
-                <button type="submit" class="btn btn-primary">Edit</button>
-              </form>
+              <a href="urls/<%=url%>" class="btn btn-primary">Edit</a>
             </td>
             <td>
               <form method="POST" action="/urls/<%= url %>/delete">

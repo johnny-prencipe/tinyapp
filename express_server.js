@@ -62,7 +62,7 @@ app.post('/urls/', (req, res) => {
 
   urlDatabase[shortURL] = {};
   urlDatabase[shortURL].longURL = req.body['longURL'];
-  urlDatabase[shortURL].username = req.session.user_id;
+  urlDatabase[shortURL].user_id = req.session.user_id;
 
   res.redirect(`/urls/${shortURL}`);  // show user their new URL
 });
@@ -124,6 +124,7 @@ app.post('/register', (req, res) => {
   };
 
   users[id] = newUser;
+  console.log(users);
   req.session.user_id = id;
   res.redirect('/');
 });
@@ -141,10 +142,13 @@ app.post('/register', (req, res) => {
 
 
 app.get('/urls/new', (req, res) => {
+  const userId = req.session.user_id
+  const user = users[userId];
+
   isLoggedIn(req, res)
   
   const templateVars = {
-    username: req.session.user_id
+    user
   };
 
   res.render('urls_new', templateVars);
@@ -152,15 +156,29 @@ app.get('/urls/new', (req, res) => {
 
 
 app.get('/urls/:shortURL', (req, res) => {
+  const userId = req.session.user_id
+  const user = users[userId];
+  const shortURL = req.params.shortURL;
+  if (!user) {
+    res.status(403)
+    .send('Error: Not logged in');
+    return;
+  }
 
-  console.log(req.params);
-  if (req.session.user_id !== urlDatabase[req.params.shortURL].username) {
-    res.redirect('/');
-    return false;
+  if (!urlDatabase[shortURL]) {
+    res.status(404)
+    .send('Error: URL not found');
+    return;
+  }
+
+  if (userId !== urlDatabase[shortURL].user_id) {
+    res.status(403)
+    .send('Error: Users can only edit their own URLs')
+    return;
   }
 
   const templateVars = {
-    username: req.session.user_id,
+    user,
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL]
   };
@@ -170,24 +188,26 @@ app.get('/urls/:shortURL', (req, res) => {
 
 
 app.get('/register', (req, res) => {
+  const userId = req.session.user_id
+  const user = users[userId];
 
   if (req.session.user_id) {
     res.redirect('/');
   }
 
-  const id = req.session.user_id;
-  const username = users[id];
-  const templateVars = { username };
+  const templateVars = { user };
 
   res.render('create_account.ejs', templateVars);
 });
 
 
 app.get('/login', (req, res) => {
-  const username = req.session.user_id;
-  const templateVars = { username };
+  const userId = req.session.user_id
+  const user = users[userId];
 
-  if (username) {
+  const templateVars = { user };
+
+  if (user) {
     res.redirect('/');
     return false;
   }
@@ -197,10 +217,12 @@ app.get('/login', (req, res) => {
 
 
 app.get('/urls', (req, res) => {
+  const userId = req.session.user_id
+  const user = users[userId];
   isLoggedIn(req, res);
   
   const templateVars = {
-    username: req.session.user_id,
+    user,
     urls: urlDatabase
   };
   
@@ -219,8 +241,6 @@ app.get('/u/:shortURL', (req, res) => {
 });
 
 app.get('/', (req, res) => res.redirect('/urls'));
-
-app.get('/hello', (req, res) => res.send('<html><body>Hello <b>World</b></body></html>\n'));
 
 // message on app bootup
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
