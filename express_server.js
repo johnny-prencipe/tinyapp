@@ -137,6 +137,8 @@ app.post('/register', (req, res) => {
  * and redirecting them to the login or register
  * screen if they are not. Otherwise, display the
  * requested page.
+ * Leaving this mostly uncommented as each 
+ * app.get() is largely self-explanatory.
  **/
 
 
